@@ -38,6 +38,9 @@ def check_weak_dylibs(app):
 
     return False
 
+# https://book.hacktricks.xyz/macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-library-injection
+# https://book.hacktricks.xyz/macos-hardening/macos-security-and-privilege-escalation/macos-proces-abuse/macos-library-injection/macos-dyld-hijacking-and-dyld_insert_libraries
+# https://malwareunicorn.org/workshops/macos_dylib_injection.html#0
 def compile_dylib():
     c_code = """
 #include <syslog.h>
